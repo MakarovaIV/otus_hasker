@@ -17,6 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from hasker_app import views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # path('signup/', views.SignUpView.as_view(), name="signup"),
+    path('signup/', views.register, name="signup"),
+    path('login/', views.login_handler, name="login"),
+    path('logout/', views.logout_handler, name="logout"),
+    path('ask/', views.IndexView.as_view(), name="index"),
 ]

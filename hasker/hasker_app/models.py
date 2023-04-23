@@ -1,18 +1,27 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+from .managers import CustomUserManager
 
 
-class User(models.Model):
-    nickname = models.CharField(max_length=100, unique=True)
+class CustomUser(AbstractUser):
+    username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, unique=True)
-    picture = models.FileField()
+    picture = models.FileField(upload_to="tmp_upload")
     picture_data = models.BinaryField(null=True)
-    creation_date = models.DateTimeField()
-    password = models.CharField(max_length=30)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    password1 = models.CharField(max_length=30)
+    password2 = models.CharField(max_length=30)
+
+    USERNAME_FIELD = "username"
+
+    objects = CustomUserManager()
 
     def __str__(self):
-        return f'{self.nickname} ' \
+        return f'{self.username} ' \
                f'{self.email} ' \
-               f'{self.password} ' \
+               f'{self.password1} ' \
+               f'{self.password2} ' \
                f'{self.picture} ' \
                f'{self.creation_date}'
 
@@ -24,7 +33,7 @@ class Question(models.Model):
     votes_count = models.IntegerField()
     creation_date = models.DateTimeField()
     correct_answer_id = models.BooleanField()
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.title} ' \
@@ -48,7 +57,7 @@ class Answer(models.Model):
     body = models.CharField()
     votes_count = models.IntegerField()
     creation_date = models.DateTimeField()
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -60,7 +69,7 @@ class Answer(models.Model):
 
 
 class VoteQuestion(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     question_id = models.OneToOneField(Question, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
@@ -68,7 +77,7 @@ class VoteQuestion(models.Model):
 
 
 class VoteAnswer(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     answer_id = models.OneToOneField(Answer, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):

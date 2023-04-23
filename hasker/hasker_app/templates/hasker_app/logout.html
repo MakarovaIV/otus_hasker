@@ -1,0 +1,14 @@
+{% extends 'root.html' %}
+
+
+{% block title %}
+    Logout
+{% endblock %}
+
+
+
+{% block content %}
+    <h1>Logged out</h1>
+    <p>You have been successfully logged out. You can <a href="{% url 'login' %}" type="submit" class="btn btn-primary">Login</a> again.</p>
+
+{% endblock %}

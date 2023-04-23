@@ -1,0 +1,14 @@
+{% extends 'root.html' %}
+
+
+{% block title %}
+    Create an Account
+{% endblock %}
+
+{% block content %}
+    <form method="POST" class="form-group" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Sign up</button>
+    </form>
+{% endblock %}
