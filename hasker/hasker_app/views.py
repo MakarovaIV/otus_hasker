@@ -1,9 +1,10 @@
-import os
+import re
 import shutil
 
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView
@@ -17,6 +18,7 @@ class IndexView(ListView):
     model = Question
     success_url = reverse_lazy("login")
     template_name = "hasker_app/index.html"
+
 
 
 def register(request):
@@ -64,3 +66,13 @@ def logout_handler(request):
         logout(request)
     messages.info(request, "Logged out successfully!")
     return render(request=request, template_name="hasker_app/logout.html")
+
+
+def get_user_image(request):
+    if request.method == "GET":
+        data = request.user.picture_data
+        # reg = re.compile(r".+\.(.+)$")
+        matches = re.match(r".+\.(.+)$", str(request.user.picture))
+        extension = matches.group(1) if matches else "jpeg"
+        content_type = "image/" + extension
+        return HttpResponse(data, content_type=content_type)
