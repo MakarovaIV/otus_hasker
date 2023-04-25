@@ -1,0 +1,25 @@
+{% extends 'root.html' %}
+
+{% block content %}
+
+    <form action="{% url 'ask' %}" method="post">
+
+    {% csrf_token %}
+        <input name="user_id" value="{{user_id}}" style="display:none"/>
+        <p>
+            <label for="Title">Title</label>
+            <input name="title" id="Title"/>
+        </p>
+        <p>
+            <label for="Text">Text</label>
+            <textarea name="body" id="Text"></textarea>
+        </p>
+        <p>
+            <label for="Tags">Tags</label>
+            <input name="tags_str" id="Tags"/>
+        </p>
+        <p>Only first 3 tags will be saved</p>
+
+        <button class="btn btn-success" type="submit">Ask</button>
+    </form>
+{% endblock %}

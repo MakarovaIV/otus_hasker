@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.forms import PasswordInput, EmailInput
 
-from hasker_app.models import CustomUser
+from .models import CustomUser, Question
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -50,3 +50,17 @@ class SignUpForm(UserCreationForm):
         if password is not None and password != password2:
             self.add_error("password2", "Your passwords must match")
         return cleaned_data
+
+
+class QuestionCreateForm(forms.ModelForm):
+    title = forms.CharField(label='Title', max_length=100, required=True)
+    body = forms.CharField(label='Text', widget=forms.Textarea)
+    tags_str = forms.CharField(label='Tags', max_length=100, required=False)
+    user_id = forms.CharField(required=False, disabled=True)
+
+    class Meta:
+        model = Question
+        fields = ['title',
+                  'body',
+                  'tags_str',
+                  'user_id']

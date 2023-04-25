@@ -25,6 +25,7 @@ urlpatterns = [
     path('signup/', views.register, name="signup"),
     path('login/', views.login_handler, name="login"),
     path('logout/', views.logout_handler, name="logout"),
-    path('ask/', views.IndexView.as_view(), name="index"),
+    path('question/', views.IndexView.as_view(), name="index"),
     path('get_user_image/', views.get_user_image, name="get_user_image"),
+    path('question/ask/', views.QuestionCreateView.as_view(), name="ask"),
 ]

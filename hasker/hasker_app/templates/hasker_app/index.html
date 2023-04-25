@@ -6,5 +6,25 @@
 {% endblock %}
 
 {% block content %}
-Hello
+    <h3>Hello</h3>
+    {% if user.is_authenticated %}
+        <a href="{% url 'ask' %}" class="btn btn-success">
+            Ask
+        </a>
+    {% endif %}
+    <div>
+        {% for question in questions %}
+            <div style="border-bottom: 1px solid grey;">
+                <h3>{{question.title}}</h3>
+
+                <p>
+                {% for tag in question.tags.all %}
+                    <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
+                {% endfor %}
+                </p>
+            </div>
+
+
+        {% endfor %}
+    </div>
 {% endblock %}

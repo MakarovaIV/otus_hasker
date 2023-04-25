@@ -26,14 +26,22 @@ class CustomUser(AbstractUser):
                f'{self.creation_date}'
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return f'{self.pk} {self.name}'
+
+
 class Question(models.Model):
     title = models.CharField(max_length=300, unique=True)
-    body = models.CharField()
-    answers_count = models.IntegerField()
-    votes_count = models.IntegerField()
-    creation_date = models.DateTimeField()
-    correct_answer_id = models.BooleanField()
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    body = models.CharField(blank=True)
+    answers_count = models.IntegerField(blank=True, default=0)
+    votes_count = models.IntegerField(blank=True, default=0)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    correct_answer_id = models.BooleanField(blank=True, default=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    tags = models.ManyToManyField(Tag)
 
     def __str__(self):
         return f'{self.title} ' \
@@ -42,43 +50,35 @@ class Question(models.Model):
                f'{self.votes_count}' \
                f'{self.creation_date}' \
                f'{self.correct_answer_id}' \
-               f'{self.user_id}'
-
-
-class Tag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    tag_id = models.ManyToManyField(Question)
-
-    def __str__(self):
-        return f'{self.tag_id} {self.name}'
+               f'{self.user}'
 
 
 class Answer(models.Model):
     body = models.CharField()
-    votes_count = models.IntegerField()
-    creation_date = models.DateTimeField()
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
+    votes_count = models.IntegerField(blank=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.body} ' \
                f'{self.votes_count} ' \
                f'{self.creation_date} ' \
-               f'{self.user_id} ' \
-               f'{self.question_id}'
+               f'{self.user} ' \
+               f'{self.question}'
 
 
 class VoteQuestion(models.Model):
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    question_id = models.OneToOneField(Question, on_delete=models.CASCADE, primary_key=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    question = models.OneToOneField(Question, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
-        return f'{self.user_id} {self.question_id}'
+        return f'{self.user} {self.answer}'
 
 
 class VoteAnswer(models.Model):
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    answer_id = models.OneToOneField(Answer, on_delete=models.CASCADE, primary_key=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    answer = models.OneToOneField(Answer, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
-        return f'{self.user_id} {self.answer_id}'
+        return f'{self.user} {self.answer}'

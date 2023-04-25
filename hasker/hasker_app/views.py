@@ -9,16 +9,16 @@ from django.contrib.auth import login, authenticate, logout
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView
 
-from hasker_app.forms import SignUpForm, CustomUserCreationForm
+from .forms import SignUpForm, CustomUserCreationForm, QuestionCreateForm
 
-from hasker_app.models import Question
+from .models import Question, CustomUser, Tag
 
 
 class IndexView(ListView):
     model = Question
     success_url = reverse_lazy("login")
     template_name = "hasker_app/index.html"
-
+    context_object_name = 'questions'
 
 
 def register(request):
@@ -76,3 +76,28 @@ def get_user_image(request):
         extension = matches.group(1) if matches else "jpeg"
         content_type = "image/" + extension
         return HttpResponse(data, content_type=content_type)
+
+
+class QuestionCreateView(CreateView):
+    model = Question
+    form_class = QuestionCreateForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.request.user.pk
+        context["user_id"] = user_id
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('index')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        q = form.save()
+        tags_str = form.cleaned_data.get("tags_str")
+        tags_arr = tags_str.split(",")
+        for tag in tags_arr[:3]:
+            if tag != '':
+                tag, created = Tag.objects.get_or_create(name=tag)
+                q.tags.add(tag)
+        return super(QuestionCreateView, self).form_valid(form)
