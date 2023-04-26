@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.forms import PasswordInput, EmailInput
 
-from .models import CustomUser, Question
+from .models import CustomUser, Question, Answer
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -53,10 +53,10 @@ class SignUpForm(UserCreationForm):
 
 
 class QuestionCreateForm(forms.ModelForm):
-    title = forms.CharField(label='Title', max_length=100, required=True)
-    body = forms.CharField(label='Text', widget=forms.Textarea)
-    tags_str = forms.CharField(label='Tags', max_length=100, required=False)
-    user_id = forms.CharField(required=False, disabled=True)
+    title = forms.CharField(max_length=100, required=True)
+    body = forms.CharField(widget=forms.Textarea)
+    tags_str = forms.CharField(max_length=100, required=False)
+    user_id = forms.IntegerField(required=False)
 
     class Meta:
         model = Question
@@ -64,3 +64,15 @@ class QuestionCreateForm(forms.ModelForm):
                   'body',
                   'tags_str',
                   'user_id']
+
+
+class AnswerQuestionForm(forms.ModelForm):
+    body = forms.CharField(widget=forms.Textarea)
+    user_id = forms.IntegerField(required=False)
+    question_id = forms.IntegerField(required=False)
+
+    class Meta:
+        model = Answer
+        fields = ['body',
+                  'user_id',
+                  'question_id']

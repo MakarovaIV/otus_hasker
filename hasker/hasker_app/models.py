@@ -8,7 +8,7 @@ class CustomUser(AbstractUser):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, unique=True)
     picture = models.FileField(upload_to="tmp_upload")
-    picture_data = models.BinaryField(null=True)
+    picture_data = models.BinaryField(blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     password1 = models.CharField(max_length=30)
     password2 = models.CharField(max_length=30)
@@ -55,7 +55,7 @@ class Question(models.Model):
 
 class Answer(models.Model):
     body = models.CharField()
-    votes_count = models.IntegerField(blank=True)
+    votes_count = models.IntegerField(blank=True, default=0)
     creation_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)

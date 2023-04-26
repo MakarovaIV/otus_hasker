@@ -1,3 +1,4 @@
+import os
 import re
 import shutil
 
@@ -7,11 +8,11 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, DetailView
 
-from .forms import SignUpForm, CustomUserCreationForm, QuestionCreateForm
+from .forms import SignUpForm, CustomUserCreationForm, QuestionCreateForm, AnswerQuestionForm
 
-from .models import Question, CustomUser, Tag
+from .models import Question, CustomUser, Tag, Answer
 
 
 class IndexView(ListView):
@@ -29,9 +30,16 @@ def register(request):
             user.username = user.username.lower()
             # login(request, user)
 
-            user.picture_data = form.cleaned_data['picture'].file.read()
+            picture_data = form.cleaned_data['picture']
+            default_pic = 'icons/user-profile-icon.png'
+            if picture_data is not None:
+                user.picture_data = picture_data.file.read()
+            else:
+                with open(default_pic, 'rb') as data:
+                    user.picture_data = data.read()
             user.save()
-            shutil.rmtree('tmp_upload')
+            if os.path.exists('tmp_upload'):
+                shutil.rmtree('tmp_upload')
             return redirect("login")
 
     else:
@@ -101,3 +109,30 @@ class QuestionCreateView(CreateView):
                 tag, created = Tag.objects.get_or_create(name=tag)
                 q.tags.add(tag)
         return super(QuestionCreateView, self).form_valid(form)
+
+
+class AnswerQuestionView(CreateView):
+    model = Answer
+    form_class = AnswerQuestionForm
+    success_url = reverse_lazy('index')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        question = get_object_or_404(Question, id=self.kwargs['question_id'])
+        context["question_title"] = question.title
+        context["question_body"] = question.body
+        context["question_votes_count"] = question.votes_count
+        context["question_tags"] = question.tags
+        context["question_id"] = question.id
+        context["user_id"] = self.request.user.pk
+        answers = Answer.objects.filter(question_id=question.id)
+
+        context["answers"] = list(answers)
+        return context
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.question = get_object_or_404(Question, id=self.kwargs['question_id'])
+        form.save()
+        return super(AnswerQuestionView, self).form_valid(form)
+

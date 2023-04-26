@@ -1,0 +1,66 @@
+{% extends 'root.html' %}
+
+
+{% block title %}
+    Question's list
+{% endblock %}
+<style>
+    .user_avatar{
+        display: inline-block;
+        width: 3rem;
+        height: 3rem;
+        background-size: cover;
+        background-position: center;
+        border-radius: 100%;
+    }
+</style>
+{% block content %}
+
+        <div>
+                <div style="border-bottom: 1px solid grey; display: flex;">
+                    <div style="margin: 0 8px">
+                        <p>{{question_votes_count}}</p>
+                        <span>Votes</span>
+                    </div>
+
+                    <div style="margin: 0 8px">
+                        <h3> {{question_title}}</h3>
+                        <p>{{question_body}}</p>
+                        <p>
+                            {% for tag in question_tags.all %}
+                                <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
+                            {% endfor %}
+
+                            <span>{{answer.user.username}}</span>
+                        </p>
+                    </div>
+                </div>
+
+        {% for answer in answers %}
+            <div style="border-bottom: 1px solid grey">
+                <p>{{answer.body}}</p>
+
+                <img class="user_avatar" style="background: url('/get_user_image/{{ answer.user.id }}');"/>
+                <p>{{answer.user.username}}</p>
+            </div>
+        {% endfor %}
+
+
+        <form action="{% url 'question_detail' question_id=question_id %}" method="post">
+        {% csrf_token %}
+
+            {% if user.is_authenticated %}
+                <p style="margin: 8px 0">
+                    <label for="Text">Your answer</label>
+                    <textarea name="body" id="Text"></textarea>
+                </p>
+
+                <input name="user_id" value="{{user_id}}" style="display:none"/>
+                <input name="question_id" value="{{question_id}}" style="display:none"/>
+
+                <button class="btn btn-success" type="submit">Send</button>
+            {% endif %}
+
+        </form>
+    </div>
+{% endblock %}

@@ -14,14 +14,32 @@
     {% endif %}
     <div>
         {% for question in questions %}
-            <div style="border-bottom: 1px solid grey;">
-                <h3>{{question.title}}</h3>
+            <div style="border-bottom: 1px solid grey; display: flex;">
+                <div style="margin: 0 8px">
+                    <p>{{question.votes_count}}</p>
+                    <span>Votes</span>
+                </div>
 
-                <p>
-                {% for tag in question.tags.all %}
-                    <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
-                {% endfor %}
-                </p>
+                <div style="margin: 0 8px">
+                    <p>{{question.answers_count}}</p>
+                    <span>Answers</span>
+                </div>
+
+                <div style="margin: 0 8px">
+                    <h3 class="card-title">
+                        <a href="{% url 'question_detail' question_id=question.pk %}" class="card-link text-decoration-none link-secondary"> {{question.title}} </a>
+                    </h3>
+
+                    <p>
+                    {% for tag in question.tags.all %}
+                        <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
+                    {% endfor %}
+                    </p>
+                </div>
+                <div style="margin: 0 8px">
+                    <p>{{question.user.username}}</p>
+                    <p>{{question.creation_date}}</p>
+                </div>
             </div>
 
 
