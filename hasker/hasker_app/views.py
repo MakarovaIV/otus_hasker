@@ -20,6 +20,7 @@ class IndexView(ListView):
     success_url = reverse_lazy("login")
     template_name = "hasker_app/index.html"
     context_object_name = 'questions'
+    paginate_by = 5
 
 
 def register(request):
