@@ -29,4 +29,5 @@ urlpatterns = [
     path('get_user_image/', views.get_user_image, name="get_user_image"),
     path('question/ask/', views.QuestionCreateView.as_view(), name="ask"),
     path('question/<int:question_id>/', views.AnswerQuestionView.as_view(), name="question_detail"),
+    path('search_tags', views.search_tags, name="search_tags"),
 ]

@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import shutil
@@ -105,9 +106,9 @@ class QuestionCreateView(CreateView):
         q = form.save()
         tags_str = form.cleaned_data.get("tags_str")
         tags_arr = tags_str.split(",")
-        for tag in tags_arr[:3]:
-            if tag != '':
-                tag, created = Tag.objects.get_or_create(name=tag)
+        for tag_str in tags_arr[:3]:
+            if tag_str != '':
+                tag, created = Tag.objects.get_or_create(name=tag_str.strip())
                 q.tags.add(tag)
         return super(QuestionCreateView, self).form_valid(form)
 
@@ -137,3 +138,13 @@ class AnswerQuestionView(CreateView):
         form.save()
         return super(AnswerQuestionView, self).form_valid(form)
 
+
+def search_tags(request):
+    query = request.GET.get('term', '')
+    tags = Tag.objects.filter(name__contains=query)
+    results = []
+    for tag in tags:
+        results.append(tag.name)
+    data = json.dumps(results)
+    mimetype = "application/json"
+    return HttpResponse(data, mimetype)
