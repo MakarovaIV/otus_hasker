@@ -70,7 +70,7 @@ class Answer(models.Model):
 
 class VoteQuestion(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    question = models.OneToOneField(Question, on_delete=models.CASCADE, primary_key=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return f'{self.user} {self.answer}'
@@ -78,7 +78,8 @@ class VoteQuestion(models.Model):
 
 class VoteAnswer(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    answer = models.OneToOneField(Answer, on_delete=models.CASCADE, primary_key=True)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, default=1)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return f'{self.user} {self.answer}'

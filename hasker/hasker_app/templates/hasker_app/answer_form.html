@@ -15,31 +15,63 @@
     }
 </style>
 {% block content %}
+    <div>
+        <div style="border-bottom: 1px solid grey; display: flex; padding: 1rem 0;">
+            <div style="display: inline-grid; margin: 0 1rem">
+                <form action="{% url 'question_vote' %}" method="post">
 
-        <div>
-                <div style="border-bottom: 1px solid grey; display: flex;">
-                    <div style="margin: 0 8px">
-                        <p>{{question_votes_count}}</p>
-                        <span>Votes</span>
-                    </div>
+                    {% csrf_token %}
 
-                    <div style="margin: 0 8px">
-                        <h3> {{question_title}}</h3>
-                        <p>{{question_body}}</p>
-                        <p>
-                            {% for tag in question_tags.all %}
-                                <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
-                            {% endfor %}
+                    <input name="question_id" value="{{question_id}}" style="display:none"/>
+                    <input name="current_path" value="1" style="display:none"/>
 
-                            <span>{{answer.user.username}}</span>
-                        </p>
-                    </div>
-                </div>
+                    {% if has_vote_for_question == False %}
+                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_increment">+</button>
+                    {% endif %}
+                    <span style="border:1px solid black; padding:0.6rem; margin: 0.2rem 0">{{ question_votes_count }}</span>
+
+                    {% if has_vote_for_question == True and vote_for_question.question_id == question_id %}
+                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_decrement">-</button>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div style="margin: 0 8px">
+                <h3> {{question_title}}</h3>
+                <p>{{question_body}}</p>
+                <p>
+                    {% for tag in question_tags.all %}
+                        <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
+                    {% endfor %}
+
+                    <span>{{answer.user.username}}</span>
+                </p>
+            </div>
+        </div>
 
         {% for answer in answers %}
-            <div style="border-bottom: 1px solid grey">
-                <p>{{answer.body}}</p>
+            <div style="border-bottom: 1px solid grey; display: flex; padding: 1rem 0;">
+                <form action="{% url 'answer_vote' %}" method="post">
 
+                    {% csrf_token %}
+
+                    <input name="answer_id" value="{{ answer.id }}" style="display:none"/>
+                    <input name="question_id" value="{{question_id}}" style="display:none"/>
+                    <input name="current_path" value="1" style="display:none"/>
+
+                    <div style="display: inline-grid; margin: 0 1rem">
+                        {% if vote_for_answer is None %}
+                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_increment">+</button>
+                        {% endif %}
+                        <span style="border:1px solid black; padding:0.6rem; margin: 0.2rem 0.2rem">{{ answer.votes_count }}</span>
+                        {% if vote_for_answer.answer.id == answer.id%}
+                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_decrement">-</button>
+                        {% endif %}
+                    </div>
+
+                </form>
+
+                <p>{{answer.body}}</p>
                 <img class="user_avatar" style="background: url('/get_user_image/{{ answer.user.id }}');"/>
                 <p>{{answer.user.username}}</p>
             </div>
@@ -60,7 +92,12 @@
 
                 <button class="btn btn-success" type="submit">Send</button>
             {% endif %}
-
         </form>
     </div>
+
+    <script>
+        setTimeout(function(){
+            document.querySelectorAll("input[name=current_path]").forEach(inp => inp.value = window.location.pathname);
+        }, 10)
+    </script>
 {% endblock %}
