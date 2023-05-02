@@ -39,7 +39,6 @@ class Question(models.Model):
     answers_count = models.IntegerField(blank=True, default=0)
     votes_count = models.IntegerField(blank=True, default=0)
     creation_date = models.DateTimeField(auto_now_add=True)
-    correct_answer_id = models.BooleanField(blank=True, default=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag)
 
@@ -59,6 +58,7 @@ class Answer(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    is_correct = models.BooleanField(blank=True, default=False)
 
     def __str__(self):
         return f'{self.body} ' \

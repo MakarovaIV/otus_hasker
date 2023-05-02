@@ -4,16 +4,7 @@
 {% block title %}
     Question's list
 {% endblock %}
-<style>
-    .user_avatar{
-        display: inline-block;
-        width: 3rem;
-        height: 3rem;
-        background-size: cover;
-        background-position: center;
-        border-radius: 100%;
-    }
-</style>
+
 {% block content %}
     <div>
         <div style="border-bottom: 1px solid grey; display: flex; padding: 1rem 0;">
@@ -25,14 +16,11 @@
                     <input name="question_id" value="{{question_id}}" style="display:none"/>
                     <input name="current_path" value="1" style="display:none"/>
 
-                    {% if has_vote_for_question == False %}
-                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_increment">+</button>
-                    {% endif %}
-                    <span style="border:1px solid black; padding:0.6rem; margin: 0.2rem 0">{{ question_votes_count }}</span>
-
-                    {% if has_vote_for_question == True and vote_for_question.question_id == question_id %}
-                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_decrement">-</button>
-                    {% endif %}
+                    <div style="display: inline-grid; margin: 0 1rem">
+                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_increment">˄</button>
+                        <span style="border:1px solid black; padding:0.6rem; margin: 0.2rem 0">{{ question_votes_count }}</span>
+                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_decrement">˅</button>
+                    </div>
                 </form>
             </div>
 
@@ -44,7 +32,8 @@
                         <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
                     {% endfor %}
 
-                    <span>{{answer.user.username}}</span>
+                    <span>{{question_username}}</span>
+                    <img class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=question_user_id %}');"/>
                 </p>
             </div>
         </div>
@@ -60,19 +49,23 @@
                     <input name="current_path" value="1" style="display:none"/>
 
                     <div style="display: inline-grid; margin: 0 1rem">
-                        {% if vote_for_answer is None %}
-                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_increment">+</button>
-                        {% endif %}
+                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_increment">˄</button>
                         <span style="border:1px solid black; padding:0.6rem; margin: 0.2rem 0.2rem">{{ answer.votes_count }}</span>
-                        {% if vote_for_answer.answer.id == answer.id%}
-                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_decrement">-</button>
+                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_decrement">˅</button>
+
+
+                        {% if answer.is_correct == True %}
+                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="unset_correct">★</button>
+                        {% else %}
+                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="set_correct">☆</button>
                         {% endif %}
+
                     </div>
 
                 </form>
 
                 <p>{{answer.body}}</p>
-                <img class="user_avatar" style="background: url('/get_user_image/{{ answer.user.id }}');"/>
+                <img class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=answer.user.id %}');"/>
                 <p>{{answer.user.username}}</p>
             </div>
         {% endfor %}

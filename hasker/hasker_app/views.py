@@ -13,7 +13,7 @@ from django.views.generic import ListView, CreateView
 
 from .forms import SignUpForm, QuestionCreateForm, AnswerQuestionForm
 
-from .models import Question, Tag, Answer, VoteQuestion, VoteAnswer
+from .models import Question, Tag, Answer, VoteQuestion, VoteAnswer, CustomUser
 
 
 class IndexView(ListView):
@@ -22,6 +22,9 @@ class IndexView(ListView):
     template_name = "hasker_app/index.html"
     context_object_name = 'questions'
     paginate_by = 5
+
+    def get_queryset(self):
+        return Question.objects.all().order_by('-votes_count', '-creation_date')
 
 
 def register(request):
@@ -74,14 +77,14 @@ def logout_handler(request):
     return render(request=request, template_name="hasker_app/logout.html")
 
 
-def get_user_image(request):
+def get_user_image(request, pk):
     if request.method == "GET":
-        data = request.user.picture_data
-        # reg = re.compile(r".+\.(.+)$")
-        matches = re.match(r".+\.(.+)$", str(request.user.picture))
+        data = CustomUser.objects.filter(id=pk)
+        picture_data = list(data)[0].picture_data
+        matches = re.match(r".+\.(.+)$", str(list(data)[0].picture))
         extension = matches.group(1) if matches else "jpeg"
         content_type = "image/" + extension
-        return HttpResponse(data, content_type=content_type)
+        return HttpResponse(picture_data, content_type=content_type)
 
 
 class QuestionCreateView(CreateView):
@@ -90,7 +93,7 @@ class QuestionCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user_id = self.request.user.pk
+        user_id = self.request.user.id
         context["user_id"] = user_id
         return context
 
@@ -122,28 +125,30 @@ class AnswerQuestionView(CreateView):
         context["question_votes_count"] = question.votes_count
         context["question_tags"] = question.tags
         context["question_id"] = question.id
-        context["user_id"] = self.request.user.pk
+        context["question_user_id"] = question.user.id
+        context["question_username"] = question.user.username
+        context["user_id"] = self.request.user.id
 
         try:
             vote_for_question = VoteQuestion.objects.get(question_id=self.kwargs['question_id'],
-                                                     user_id=self.request.user.pk)
+                                                     user_id=self.request.user.id)
         except:
             vote_for_question = None
 
         context["vote_for_question"] = vote_for_question
 
-        has_vote_for_question = VoteQuestion.objects.filter(user_id=self.request.user.pk)
+        has_vote_for_question = VoteQuestion.objects.filter(user_id=self.request.user.id)
         context["has_vote_for_question"] = len(has_vote_for_question) > 0
 
         try:
             vote_for_answer = VoteAnswer.objects.get(question_id=self.kwargs['question_id'],
-                                                     user_id=self.request.user.pk)
+                                                     user_id=self.request.user.id)
         except:
             vote_for_answer = None
 
         context["vote_for_answer"] = vote_for_answer
 
-        answers = Answer.objects.filter(question_id=question.id)
+        answers = Answer.objects.filter(question_id=question.id).order_by('-votes_count', '-creation_date')
 
         context["answers"] = list(answers)
         return context
@@ -168,61 +173,74 @@ def search_tags(request):
 
 def answer_votes(request):
     data = request.POST.copy()
-    answer_id = data.get("answer_id")
-    question_id = data.get("question_id")
+    answer_id = int(data.get("answer_id"))
+    question_id = int(data.get("question_id"))
 
     if request.user.is_authenticated:
         answer = Answer.objects.get(id=answer_id)
-
         answer_current_count = int(answer.votes_count or 0)
 
-        answ_count = answer_current_count
-
         if data.get("btn_func") == "a_decrement":
-            answ_count = answer_current_count - 1
-            VoteAnswer.objects.filter(answer_id=answer_id,
-                                      user_id=request.user.pk).delete()
+            voted_answer = VoteAnswer.objects.filter(question_id=question_id, user_id=request.user.id).first()
+            if voted_answer and voted_answer.answer_id == answer_id:
+                voted_answer.delete()
+                answer.votes_count = answer_current_count - 1
+                answer.save()
+            else:
+                messages.error(request, "You cannot vote")
         elif data.get("btn_func") == "a_increment":
-            answ_count = answer_current_count + 1
-            vote_answer = VoteAnswer.objects.create(answer_id=answer_id,
-                                                    user_id=request.user.pk,
+            has_voted_answer = len(VoteAnswer.objects.filter(question_id=question_id, user_id=request.user.id)) > 0
+            if has_voted_answer:
+                messages.error(request, "You've already voted")
+            else:
+                vote_answer = VoteAnswer.objects.create(answer_id=answer_id,
+                                                    user_id=request.user.id,
                                                     question_id=question_id)
-            vote_answer.save()
-        else:
-            answ_count = 1
-
-        answer.votes_count = answ_count
-        answer.save()
+                vote_answer.save()
+                answer.votes_count = answer_current_count + 1
+                answer.save()
+        elif data.get("btn_func") == "set_correct":
+            has_correct_answer = len(Answer.objects.filter(question_id=question_id, is_correct=True)) > 0
+            if has_correct_answer:
+                messages.error(request, "You've already marked")
+            else:
+                answer.is_correct = True
+                answer.save()
+        elif data.get("btn_func") == "unset_correct":
+            if answer.is_correct:
+                answer.is_correct = False
+                answer.save()
+            else:
+                messages.error(request, "You cannot unset")
 
     return redirect(data['current_path'])
 
 
 def question_votes(request):
     data = request.POST.copy()
-    question_id = data.get("question_id")
+    question_id = int(data.get("question_id"))
 
     if request.user.is_authenticated:
         question = get_object_or_404(Question, id=question_id)
-
         question_current_count = int(question.votes_count or 0)
 
-        question_count = question_current_count
-
         if data.get("btn_func") == "q_decrement":
-            question_count = question_current_count - 1
-            VoteQuestion.objects.filter(question_id=question_id, user_id=request.user.pk).delete()
-        elif data.get("btn_func") == "q_increment":
-            user_votes = VoteQuestion.objects.filter(user_id=request.user.pk)
-            if len(user_votes) == 0:
-                question_count = question_current_count + 1
-                vote_question = VoteQuestion.objects.create(question_id=question_id, user_id=request.user.pk)
-                vote_question.save()
+            voted_question = VoteQuestion.objects.filter(user_id=request.user.id).first()
+            if voted_question and voted_question.question_id == question_id:
+                voted_question.delete()
+                question.votes_count = question_current_count - 1
+                question.save()
             else:
+                messages.error(request, "You cannot vote")
+        elif data.get("btn_func") == "q_increment":
+            has_voted_question = len(VoteQuestion.objects.filter(user_id=request.user.id)) > 0
+            if has_voted_question:
                 messages.error(request, "You've already voted for question")
-        else:
-            question_count = 1
-
-        question.votes_count = question_count
-        question.save()
+            else:
+                vote_question = VoteQuestion.objects.create(question_id=question_id, user_id=request.user.id)
+                vote_question.save()
+                question.votes_count = question_current_count + 1
+                question.save()
 
     return redirect(data['current_path'])
+
