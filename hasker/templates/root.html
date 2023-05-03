@@ -68,7 +68,7 @@
             <ul class="navbar-nav flex-row ml-md-auto d-none d-md-flex" style="margin-right:2rem">
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" title="Logged in as {{ user.username }}">{{ user.username }}</a>
+                    <a class="nav-link" href="{% url 'settings' pk=user.id %}" title="Logged in as {{ user.username }}">{{ user.username }}</a>
                 </li>
                 <li class="nav-item">
                     <img class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=user.id %}');"/>

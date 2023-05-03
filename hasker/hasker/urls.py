@@ -32,4 +32,5 @@ urlpatterns = [
     path('search_tags', views.search_tags, name="search_tags"),
     path('answer_vote', views.answer_votes, name="answer_vote"),
     path('question_vote', views.question_votes, name="question_vote"),
+    path('settings/<int:pk>', views.UserSettings.as_view(), name="settings"),
 ]

@@ -48,7 +48,6 @@ class Question(models.Model):
                f'{self.answers_count} ' \
                f'{self.votes_count}' \
                f'{self.creation_date}' \
-               f'{self.correct_answer_id}' \
                f'{self.user}'
 
 
@@ -65,6 +64,7 @@ class Answer(models.Model):
                f'{self.votes_count} ' \
                f'{self.creation_date} ' \
                f'{self.user} ' \
+               f'{self.is_correct} ' \
                f'{self.question}'
 
 

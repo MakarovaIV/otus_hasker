@@ -9,9 +9,9 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, DetailView, UpdateView
 
-from .forms import SignUpForm, QuestionCreateForm, AnswerQuestionForm
+from .forms import SignUpForm, QuestionCreateForm, AnswerQuestionForm, CustomUserChangeForm
 
 from .models import Question, Tag, Answer, VoteQuestion, VoteAnswer, CustomUser
 
@@ -105,11 +105,17 @@ class QuestionCreateView(CreateView):
         q = form.save()
         tags_str = form.cleaned_data.get("tags_str")
         tags_arr = tags_str.split(",")
+        if len(tags_arr) > 3:
+            messages.error(form, "Should be less than 3 tags")
         for tag_str in tags_arr[:3]:
             if tag_str != '':
                 tag, created = Tag.objects.get_or_create(name=tag_str.strip())
                 q.tags.add(tag)
         return super(QuestionCreateView, self).form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Form is invalid")
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 class AnswerQuestionView(CreateView):
@@ -244,3 +250,40 @@ def question_votes(request):
 
     return redirect(data['current_path'])
 
+
+class UserSettings(UpdateView):
+    model = CustomUser
+    form_class = CustomUserChangeForm
+    success_url = reverse_lazy("index")
+    template_name = "hasker_app/customuser_detail.html"
+
+    def post(self, request, *args, **kwargs):
+        form = CustomUserChangeForm(request.POST, request.FILES)
+        data = request.POST.copy()
+        if len(data['email']) > 0:
+            is_data_changed = False
+            if data['email'] != self.request.user.email:
+                self.request.user.email = data['email']
+                is_data_changed = True
+
+            picture_data = form.files['picture'] if 'picture' in form.files else None
+            if picture_data is not None:
+                self.request.user.picture_data = picture_data.file.read()
+                is_data_changed = True
+
+            if os.path.exists('tmp_upload'):
+                shutil.rmtree('tmp_upload')
+
+            if is_data_changed:
+                self.request.user.save()
+                messages.info(request, "Changes are saved")
+        else:
+            messages.error(request, "Incorrect email or avatar")
+        return render(request, "hasker_app/customuser_detail.html")
+
+    def get(self, request, *args, **kwargs):
+        # return super().get().filter(id=self.request.user.id)
+        return super().get(self, request, *args, **kwargs)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(id=self.request.user.id)

@@ -1,0 +1,38 @@
+{% extends 'root.html' %}
+
+{% block content %}
+    <h3>Seting</h3>
+    <p>
+        <span>Login</span>
+        <span>{{user.username}}</span>
+    </p>
+    <form action="{% url 'settings' pk=user.id %}" method="post" enctype="multipart/form-data">
+
+    {% csrf_token %}
+        <input name="user_id" value="{{user_id}}" style="display:none"/>
+
+        <p>
+            <span>Email</span>
+            <input name="email" value="{{user.email}}" required/>
+        </p>
+        <p>
+            <span>Avatar</span>
+            <img id="avatar_preview" class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=user.id %}');"/>
+            <input id="img_input" type="file" name="picture"/>
+
+            <script>
+                const img_input = document.querySelector("#img_input");
+                if (img_input) {
+                    img_input.onchange = evt => {
+                        const [file] = img_input.files
+                        if (file) {
+                             document.querySelector("#avatar_preview").src = URL.createObjectURL(file)
+                        }
+                    }
+                }
+            </script>
+        </p>
+
+        <button class="btn btn-success" type="submit">Save</button>
+    </form>
+{% endblock %}
