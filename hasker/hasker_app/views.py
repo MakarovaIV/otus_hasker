@@ -23,8 +23,16 @@ class IndexView(ListView):
     context_object_name = 'questions'
     paginate_by = 5
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sort"] = self.request.GET.get('sort', 'hot')
+        return context
+
     def get_queryset(self):
-        return Question.objects.all().order_by('-votes_count', '-creation_date')
+        if self.request.GET.get('sort', 'hot') == 'hot':
+            return Question.objects.all().order_by('-votes_count', '-creation_date')
+        else:
+            return Question.objects.all().order_by('-creation_date', '-votes_count')
 
 
 def register(request):
@@ -94,23 +102,29 @@ class QuestionCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_id = self.request.user.id
+        if hasattr(context["form"], "cleaned_data"):
+            for k, v in context["form"].cleaned_data.items():
+                context[k] = v
         context["user_id"] = user_id
         return context
 
     def get_success_url(self):
-        return reverse_lazy('index')
+        return reverse_lazy('question_detail', kwargs={'question_id': self.kwargs['question_id']})
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        q = form.save()
         tags_str = form.cleaned_data.get("tags_str")
         tags_arr = tags_str.split(",")
         if len(tags_arr) > 3:
-            messages.error(form, "Should be less than 3 tags")
-        for tag_str in tags_arr[:3]:
-            if tag_str != '':
-                tag, created = Tag.objects.get_or_create(name=tag_str.strip())
-                q.tags.add(tag)
+            messages.error(self.request, "Should be less than 3 tags")
+            return self.render_to_response(self.get_context_data(form=form))
+        else:
+            q = form.save()
+            self.kwargs["question_id"] = q.id
+            for tag_str in tags_arr[:3]:
+                if tag_str != '':
+                    tag, created = Tag.objects.get_or_create(name=tag_str.strip())
+                    q.tags.add(tag)
         return super(QuestionCreateView, self).form_valid(form)
 
     def form_invalid(self, form):
@@ -167,11 +181,16 @@ class AnswerQuestionView(CreateView):
 
 
 def search_tags(request):
-    query = request.GET.get('term', '')
-    tags = Tag.objects.filter(name__contains=query)
+    inputs = request.GET.get('term', ' ').split(",")
+    inputs = list(map(lambda tag: tag.strip(), inputs))
+    last_input = inputs[-1]
+    previous_input = ""
+    if len(inputs) > 1:
+        previous_input = ", ".join(inputs[:len(inputs)-1]).strip() + ", "
+    tags = Tag.objects.filter(name__contains=last_input.strip())
     results = []
     for tag in tags:
-        results.append(tag.name)
+        results.append(previous_input + tag.name)
     data = json.dumps(results)
     mimetype = "application/json"
     return HttpResponse(data, mimetype)
@@ -255,7 +274,6 @@ class UserSettings(UpdateView):
     model = CustomUser
     form_class = CustomUserChangeForm
     success_url = reverse_lazy("index")
-    template_name = "hasker_app/customuser_detail.html"
 
     def post(self, request, *args, **kwargs):
         form = CustomUserChangeForm(request.POST, request.FILES)
@@ -282,8 +300,17 @@ class UserSettings(UpdateView):
         return render(request, "hasker_app/customuser_detail.html")
 
     def get(self, request, *args, **kwargs):
-        # return super().get().filter(id=self.request.user.id)
         return super().get(self, request, *args, **kwargs)
 
     def get_queryset(self):
         return super().get_queryset().filter(id=self.request.user.id)
+
+
+class UserSettingView(DetailView):
+    model = CustomUser
+    form_class = CustomUserChangeForm
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context["user_id"] = self.kwargs['pk']
+    #     return context

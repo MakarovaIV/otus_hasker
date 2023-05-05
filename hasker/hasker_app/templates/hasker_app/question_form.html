@@ -8,19 +8,19 @@
         <input name="user_id" value="{{user_id}}" style="display:none"/>
         <p>
             <label for="Title">Title</label>
-            <input name="title" id="Title"/>
+            <input name="title" id="Title" value="{{title}}"/>
         </p>
         <p>
             <label for="Text">Text</label>
-            <textarea name="body" id="Text"></textarea>
+            <textarea name="body" id="Text">{{body}}</textarea>
         </p>
         <p>
-            <label for="search_tag">Tags</label>
-            <input id="search_tag" name="tags_str" type="search"/>
+            <label for="search_tags">Tags</label>
+            <input id="search_tags" name="tags_str" type="search" value="{{tags_str}}"/>
         </p>
         <script>
           $(function() {
-            $("#search_tag").autocomplete({
+            $("#search_tags").autocomplete({
               source: "{% url 'search_tags' %}",
               minLength: 1,
             });

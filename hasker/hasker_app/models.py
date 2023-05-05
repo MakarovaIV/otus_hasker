@@ -34,7 +34,7 @@ class Tag(models.Model):
 
 
 class Question(models.Model):
-    title = models.CharField(max_length=300, unique=True)
+    title = models.CharField(max_length=300)
     body = models.CharField(blank=True)
     answers_count = models.IntegerField(blank=True, default=0)
     votes_count = models.IntegerField(blank=True, default=0)

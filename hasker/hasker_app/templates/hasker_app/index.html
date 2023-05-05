@@ -6,6 +6,27 @@
 {% endblock %}
 
 {% block content %}
+
+<style>
+    .sort-btn{
+        font-size: 2rem;
+        color: black;
+        text-decoration: none;
+        border-radius: 0.3rem;
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 0 1rem;
+    }
+
+</style>
+    <div style="display:flex; justify-content: center; gap: 2rem;">
+        {% if sort == 'hot' %}
+            <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-primary btn-lg active">Sort Hot</a>
+            <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-outline-primary btn-lg">Sort New</a>
+        {% else %}
+            <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-outline-primary btn-lg">Sort Hot</a>
+            <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-primary btn-lg active">Sort New</a>
+        {% endif %}
+    </div>
     <div style="display: flex;">
         <div>
             {% for question in questions %}
@@ -32,7 +53,7 @@
                         </p>
                     </div>
                     <div style="margin: 0 8px">
-                        <p>{{question.user.username}}</p>
+                        <a href="{% url 'view_user' pk=question.user.id %}">{{question.user.username}}</a>
                         <p>{{question.creation_date}}</p>
                     </div>
                 </div>
@@ -65,7 +86,7 @@
         <ul class="pagination">
             {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a href="?page={{ page_obj.previous_page_number }}" class="page-link">&laquo;</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}" class="page-link">&laquo;</a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
@@ -76,12 +97,12 @@
             {% for page_number in page_obj.paginator.page_range %}
                 {% if page_obj.number == page_number %}
                     <li class="page-item active">
-                        <span class="page-link">{{ page_number}}
+                        <span class="page-link">{{ page_number }}
                         </span>
                     </li>
                 {% else %}
                     <li class="page-item">
-                        <a href="?page={{ page_number }}" class="page-link">
+                        <a href="?page={{ page_number }}&sort={{ sort }}" class="page-link">
                             {{ page_number }}
                         </a>
                     </li>
@@ -90,7 +111,7 @@
 
             {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a href="?page={{ page_obj.next_page_number }}" class="page-link">&raquo;</a>
+                    <a href="?page={{ page_obj.next_page_number }}&sort={{ sort }}" class="page-link">&raquo;</a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
