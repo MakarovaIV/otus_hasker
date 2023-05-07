@@ -148,10 +148,15 @@ class QuestionCreateView(CreateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
-class AnswerQuestionView(CreateView):
+class AnswerQuestionView(ListView):
     model = Answer
     form_class = AnswerQuestionForm
+    template_name = "hasker_app/answer_form.html"
+    context_object_name = 'answers'
     paginate_by = 3
+
+    def get_queryset(self):
+        return Answer.objects.filter(question_id=self.kwargs['question_id']).order_by('-votes_count', '-creation_date')
 
     def get_success_url(self):
         return reverse_lazy('question_detail', kwargs={'question_id': self.kwargs['question_id']})
@@ -182,8 +187,6 @@ class AnswerQuestionView(CreateView):
         except:
             vote_for_answer = None
         context["vote_for_answer"] = vote_for_answer
-        answers = Answer.objects.filter(question_id=question.id).order_by('-votes_count', '-creation_date')
-        context["answers"] = list(answers)
         return context
 
     def form_valid(self, form):

@@ -65,6 +65,48 @@
                 <p>{{answer.user.username}}</p>
             </div>
         {% endfor %}
+
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a href="?page={{ page_obj.previous_page_number }}"
+                           class="page-link">&laquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                {% endif %}
+
+                {% for page_number in page_obj.paginator.page_range %}
+                    {% if page_obj.number == page_number %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_number }}
+                            </span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a href="?page={{ page_number }}"
+                               class="page-link">
+                                {{ page_number }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a href="?page={{ page_obj.next_page_number }}"
+                           class="page-link">&raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
         <form action="{% url 'question_detail' question_id=question_id %}" method="post">
         {% csrf_token %}
             {% if user.is_authenticated %}
@@ -83,4 +125,5 @@
             document.querySelectorAll("input[name=current_path]").forEach(inp => inp.value = window.location.pathname);
         }, 10)
     </script>
+
 {% endblock %}
