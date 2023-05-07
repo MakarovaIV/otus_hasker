@@ -32,18 +32,26 @@
             </ul>
         </div>
         <div class="container-fluid">
-            <input id="search_tag" type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
-            <button type="button" class="btn btn-outline-primary">Search</button>
+            <form action="{% url 'index' %}" method="get">
+                <input id="search"
+                       type="search"
+                       class="form-control rounded"
+                       placeholder="Search"
+                       aria-label="Search"
+                       aria-describedby="search-addon"
+                       name="search"
+                       value="{{ search }}"/>
+                <button type="submit" class="btn btn-outline-primary">Search</button>
 
-            <script>
-              $(function() {
-                $("#search_tag").autocomplete({
-                  source: "{% url 'search_tags' %}",
-                  minLength: 1,
-                });
-              });
-            </script>
-
+                <script>
+                  $(function() {
+                    $("#search").autocomplete({
+                      source: "{% url 'search_question' %}",
+                      minLength: 1,
+                    });
+                  });
+                </script>
+            </form>
         </div>
         <div>
             {% if user.is_authenticated %}

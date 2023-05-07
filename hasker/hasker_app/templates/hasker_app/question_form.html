@@ -2,32 +2,36 @@
 
 {% block content %}
 
-    <form action="{% url 'ask' %}" method="post">
+    {% if user.is_authenticated %}
+        <form action="{% url 'ask' %}" method="post">
 
-    {% csrf_token %}
-        <input name="user_id" value="{{user_id}}" style="display:none"/>
-        <p>
-            <label for="Title">Title</label>
-            <input name="title" id="Title" value="{{title}}"/>
-        </p>
-        <p>
-            <label for="Text">Text</label>
-            <textarea name="body" id="Text">{{body}}</textarea>
-        </p>
-        <p>
-            <label for="search_tags">Tags</label>
-            <input id="search_tags" name="tags_str" type="search" value="{{tags_str}}"/>
-        </p>
-        <script>
-          $(function() {
-            $("#search_tags").autocomplete({
-              source: "{% url 'search_tags' %}",
-              minLength: 1,
-            });
-          });
-        </script>
-        <p>Only first 3 tags will be saved</p>
+        {% csrf_token %}
+            <input name="user_id" value="{{user_id}}" style="display:none"/>
+            <p>
+                <label for="Title">Title</label>
+                <input name="title" id="Title" value="{{title}}"/>
+            </p>
+            <p>
+                <label for="Text">Text</label>
+                <textarea name="body" id="Text">{{body}}</textarea>
+            </p>
+            <p>
+                <label for="search_tags">Tags</label>
+                <input id="search_tags" name="tags_str" type="search" value="{{tags_str}}"/>
+            </p>
+            <script>
+              $(function() {
+                $("#search_tags").autocomplete({
+                  source: "{% url 'search_tags' %}",
+                  minLength: 1,
+                });
+              });
+            </script>
+            <p>Only first 3 tags will be saved</p>
 
-        <button class="btn btn-success" type="submit">Ask</button>
-    </form>
+            <button class="btn btn-success" type="submit">Ask</button>
+        </form>
+    {% else %}
+        <p>You are not authorized</p>
+    {% endif %}
 {% endblock %}

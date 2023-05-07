@@ -5,6 +5,7 @@ import shutil
 
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
@@ -25,14 +26,29 @@ class IndexView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        for q in context['questions']:
+            q.date = q.creation_date.date()
         context["sort"] = self.request.GET.get('sort', 'hot')
+        context["sort_enabled"] = self.request.GET.get('search', '') == ''
+        context["search"] = self.request.GET.get('search', '')
         return context
 
     def get_queryset(self):
-        if self.request.GET.get('sort', 'hot') == 'hot':
-            return Question.objects.all().order_by('-votes_count', '-creation_date')
+        search_text = self.request.GET.get('search', '')
+
+        if search_text[:4] == "tag:":
+            query = Question.objects.filter(tags__name=search_text[4:])
+        elif search_text:
+            query = Question.objects.filter(Q(title__contains=search_text) | Q(body__contains=search_text))
         else:
-            return Question.objects.all().order_by('-creation_date', '-votes_count')
+            query = Question.objects.all()
+
+        if self.request.GET.get('sort', 'hot') == 'hot':
+            sorted_query = query.order_by('-votes_count', '-creation_date')
+        else:
+            sorted_query = query.order_by('-creation_date', '-votes_count')
+
+        return sorted_query
 
 
 def register(request):
@@ -135,7 +151,10 @@ class QuestionCreateView(CreateView):
 class AnswerQuestionView(CreateView):
     model = Answer
     form_class = AnswerQuestionForm
-    success_url = reverse_lazy('index')
+    paginate_by = 3
+
+    def get_success_url(self):
+        return reverse_lazy('question_detail', kwargs={'question_id': self.kwargs['question_id']})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -151,25 +170,19 @@ class AnswerQuestionView(CreateView):
 
         try:
             vote_for_question = VoteQuestion.objects.get(question_id=self.kwargs['question_id'],
-                                                     user_id=self.request.user.id)
+                                                         user_id=self.request.user.id)
         except:
             vote_for_question = None
-
         context["vote_for_question"] = vote_for_question
-
         has_vote_for_question = VoteQuestion.objects.filter(user_id=self.request.user.id)
         context["has_vote_for_question"] = len(has_vote_for_question) > 0
-
         try:
             vote_for_answer = VoteAnswer.objects.get(question_id=self.kwargs['question_id'],
                                                      user_id=self.request.user.id)
         except:
             vote_for_answer = None
-
         context["vote_for_answer"] = vote_for_answer
-
         answers = Answer.objects.filter(question_id=question.id).order_by('-votes_count', '-creation_date')
-
         context["answers"] = list(answers)
         return context
 
@@ -310,7 +323,19 @@ class UserSettingView(DetailView):
     model = CustomUser
     form_class = CustomUserChangeForm
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context["user_id"] = self.kwargs['pk']
-    #     return context
+
+def search_question(request):
+    inputs = request.GET.get('term', ' ')
+    results = []
+    if inputs[:4] == 'tag:':
+        tag = inputs[4:]
+        tags = Tag.objects.filter(name__startswith=tag.strip())
+        for tag in tags:
+            results.append("tag:" + tag.name)
+    else:
+        question = Question.objects.filter(title__contains=inputs) | Question.objects.filter(body__contains=inputs)
+        for q in question:
+            results.append(q.title)
+    data = json.dumps(results)
+    mimetype = "application/json"
+    return HttpResponse(data, mimetype)

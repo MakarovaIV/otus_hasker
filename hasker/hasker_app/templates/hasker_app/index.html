@@ -19,12 +19,14 @@
 
 </style>
     <div style="display:flex; justify-content: center; gap: 2rem;">
-        {% if sort == 'hot' %}
-            <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-primary btn-lg active">Sort Hot</a>
-            <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-outline-primary btn-lg">Sort New</a>
-        {% else %}
-            <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-outline-primary btn-lg">Sort Hot</a>
-            <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-primary btn-lg active">Sort New</a>
+        {% if sort_enabled %}
+            {% if sort == 'hot' %}
+                <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-primary btn-lg active">Sort Hot</a>
+                <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-outline-primary btn-lg">Sort New</a>
+            {% else %}
+                <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-outline-primary btn-lg">Sort Hot</a>
+                <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-primary btn-lg active">Sort New</a>
+            {% endif %}
         {% endif %}
     </div>
     <div style="display: flex;">
@@ -48,13 +50,14 @@
 
                         <p>
                         {% for tag in question.tags.all %}
-                            <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
+                            <a style="border-radius: 4px; background-color: lightblue; padding: 4px 8px"
+                            href="?search=tag%3A{{ tag.name }}">{{tag.name}}</a> &nbsp
                         {% endfor %}
                         </p>
                     </div>
                     <div style="margin: 0 8px">
                         <a href="{% url 'view_user' pk=question.user.id %}">{{question.user.username}}</a>
-                        <p>{{question.creation_date}}</p>
+                        <p>{{question.date}}</p>
                     </div>
                 </div>
             {% endfor %}
@@ -86,7 +89,8 @@
         <ul class="pagination">
             {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}" class="page-link">&laquo;</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if sort_enabled %}&sort={{ sort }}{% endif %}{% if search %}&search={{ search }}{% endif %}"
+                       class="page-link">&laquo;</a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
@@ -102,7 +106,8 @@
                     </li>
                 {% else %}
                     <li class="page-item">
-                        <a href="?page={{ page_number }}&sort={{ sort }}" class="page-link">
+                        <a href="?page={{ page_number }}{% if sort_enabled %}&sort={{ sort }}{% endif %}{% if search %}&search={{ search }}{% endif %}"
+                           class="page-link">
                             {{ page_number }}
                         </a>
                     </li>
@@ -111,7 +116,8 @@
 
             {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a href="?page={{ page_obj.next_page_number }}&sort={{ sort }}" class="page-link">&raquo;</a>
+                    <a href="?page={{ page_obj.next_page_number }}{% if sort_enabled %}&sort={{ sort }}{% endif %}{% if search %}&search={{ search }}{% endif %}"
+                       class="page-link">&raquo;</a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
