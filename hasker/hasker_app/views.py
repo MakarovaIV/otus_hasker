@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 
+import environ
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.mail import get_connection, EmailMessage
@@ -19,12 +20,20 @@ from .models import Question, Tag, Answer, VoteQuestion, VoteAnswer, CustomUser
 from django.conf import settings
 
 
+env = environ.Env()
+environ.Env.read_env()
+
+
+def get_trending_questions():
+    return list(Question.objects.all().order_by('-votes_count', '-creation_date')[:int(env('TRENDING_PAGINATION'))])
+
+
 class IndexView(ListView):
     model = Question
     success_url = reverse_lazy("login")
     template_name = "hasker_app/index.html"
     context_object_name = 'questions'
-    paginate_by = 5
+    paginate_by = env('INDEX_PAGINATION')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -33,11 +42,11 @@ class IndexView(ListView):
         context["sort"] = self.request.GET.get('sort', 'hot')
         context["sort_enabled"] = self.request.GET.get('search', '') == ''
         context["search"] = self.request.GET.get('search', '')
+        context["trending"] = get_trending_questions()
         return context
 
     def get_queryset(self):
         search_text = self.request.GET.get('search', '')
-
         if search_text[:4] == "tag:":
             query = Question.objects.filter(tags__name=search_text[4:])
         elif search_text:
@@ -49,7 +58,6 @@ class IndexView(ListView):
             sorted_query = query.order_by('-votes_count', '-creation_date')
         else:
             sorted_query = query.order_by('-creation_date', '-votes_count')
-
         return sorted_query
 
 
@@ -59,8 +67,6 @@ def register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
-            # login(request, user)
-
             picture_data = form.cleaned_data['picture']
             default_pic = 'icons/user-profile-icon.png'
             if picture_data is not None:
@@ -72,10 +78,8 @@ def register(request):
             if os.path.exists('tmp_upload'):
                 shutil.rmtree('tmp_upload')
             return redirect("login")
-
     else:
         form = SignUpForm()
-
     return render(request=request,
                   template_name="hasker_app/signup_form.html",
                   context={"form": form})
@@ -92,6 +96,10 @@ def login_handler(request):
                 login(request, user)
                 messages.info(request, f"You are logged in as {username}.")
                 return redirect("index")
+            else:
+                messages.error(request, 'Login field is empty')
+        else:
+            messages.error(request, 'Login or password incorrect')
     form = AuthenticationForm()
     return render(request=request, template_name="hasker_app/login.html", context={"login_form": form})
 
@@ -124,6 +132,7 @@ class QuestionCreateView(CreateView):
             for k, v in context["form"].cleaned_data.items():
                 context[k] = v
         context["user_id"] = user_id
+        context["trending"] = get_trending_questions()
         return context
 
     def get_success_url(self):
@@ -155,7 +164,7 @@ class AnswerQuestionView(ListView):
     form_class = AnswerQuestionForm
     template_name = "hasker_app/answer_form.html"
     context_object_name = 'answers'
-    paginate_by = 3
+    paginate_by = env('ANSWER_PAGINATION')
 
     def get_queryset(self):
         return Answer.objects.filter(question_id=self.kwargs['question_id']).order_by('-votes_count', '-creation_date')
@@ -166,15 +175,8 @@ class AnswerQuestionView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         question = get_object_or_404(Question, id=self.kwargs['question_id'])
-        context["question_title"] = question.title
-        context["question_body"] = question.body
-        context["question_votes_count"] = question.votes_count
-        context["question_tags"] = question.tags
-        context["question_id"] = question.id
-        context["question_user_id"] = question.user.id
-        context["question_username"] = question.user.username
+        context["question"] = question
         context["user_id"] = self.request.user.id
-
         try:
             vote_for_question = VoteQuestion.objects.get(question_id=self.kwargs['question_id'],
                                                          user_id=self.request.user.id)
@@ -189,10 +191,11 @@ class AnswerQuestionView(ListView):
         except:
             vote_for_answer = None
         context["vote_for_answer"] = vote_for_answer
+        context["trending"] = get_trending_questions()
         return context
 
 
-def answer_question(request):
+def answer(request):
     if request.method == "POST":
         form = AnswerQuestionForm(request.POST)
         question_id = form.data['question_id']
@@ -227,7 +230,7 @@ def format_answer_email(question_id, answer):
     """.format('http://127.0.0.1:8000/question/' + question_id + '/', answer)
 
 
-def search_tags(request):
+def autocomplete_tag(request):
     inputs = request.GET.get('term', ' ').split(",")
     inputs = list(map(lambda tag: tag.strip(), inputs))
     last_input = inputs[-1]
@@ -247,11 +250,9 @@ def answer_votes(request):
     data = request.POST.copy()
     answer_id = int(data.get("answer_id"))
     question_id = int(data.get("question_id"))
-
     if request.user.is_authenticated:
         answer = Answer.objects.get(id=answer_id)
         answer_current_count = int(answer.votes_count or 0)
-
         if data.get("btn_func") == "a_decrement":
             voted_answer = VoteAnswer.objects.filter(question_id=question_id, user_id=request.user.id).first()
             if voted_answer and voted_answer.answer_id == answer_id:
@@ -284,18 +285,15 @@ def answer_votes(request):
                 answer.save()
             else:
                 messages.error(request, "You cannot unset")
-
     return redirect(data['current_path'])
 
 
 def question_votes(request):
     data = request.POST.copy()
     question_id = int(data.get("question_id"))
-
     if request.user.is_authenticated:
         question = get_object_or_404(Question, id=question_id)
         question_current_count = int(question.votes_count or 0)
-
         if data.get("btn_func") == "q_decrement":
             voted_question = VoteQuestion.objects.filter(user_id=request.user.id).first()
             if voted_question and voted_question.question_id == question_id:
@@ -313,7 +311,6 @@ def question_votes(request):
                 vote_question.save()
                 question.votes_count = question_current_count + 1
                 question.save()
-
     return redirect(data['current_path'])
 
 
@@ -330,15 +327,12 @@ class UserSettings(UpdateView):
             if data['email'] != self.request.user.email:
                 self.request.user.email = data['email']
                 is_data_changed = True
-
             picture_data = form.files['picture'] if 'picture' in form.files else None
             if picture_data is not None:
                 self.request.user.picture_data = picture_data.file.read()
                 is_data_changed = True
-
             if os.path.exists('tmp_upload'):
                 shutil.rmtree('tmp_upload')
-
             if is_data_changed:
                 self.request.user.save()
                 messages.info(request, "Changes are saved")
@@ -356,6 +350,11 @@ class UserSettings(UpdateView):
 class UserSettingView(DetailView):
     model = CustomUser
     form_class = CustomUserChangeForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["trending"] = get_trending_questions()
+        return context
 
 
 def search_question(request):

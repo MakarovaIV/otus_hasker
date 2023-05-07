@@ -1,37 +1,51 @@
 {% extends 'root.html' %}
 
 {% block content %}
+<style>
+    .invisible {
+        display:none
+    }
 
-    {% if user.is_authenticated %}
-        <form action="{% url 'ask' %}" method="post">
+	.ask-q-wrapper {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		flex-grow: 1;
+	}
+</style>
+	<div class="ask-q-wrapper">
+		{% if user.is_authenticated %}
+			<h3>Ask a question</h3>
+			<form action="{% url 'ask' %}" method="post">
 
-        {% csrf_token %}
-            <input name="user_id" value="{{user_id}}" style="display:none"/>
-            <p>
-                <label for="Title">Title</label>
-                <input name="title" id="Title" value="{{title}}"/>
-            </p>
-            <p>
-                <label for="Text">Text</label>
-                <textarea name="body" id="Text">{{body}}</textarea>
-            </p>
-            <p>
-                <label for="search_tags">Tags</label>
-                <input id="search_tags" name="tags_str" type="search" value="{{tags_str}}"/>
-            </p>
-            <script>
-              $(function() {
-                $("#search_tags").autocomplete({
-                  source: "{% url 'search_tags' %}",
-                  minLength: 1,
-                });
-              });
-            </script>
-            <p>Only first 3 tags will be saved</p>
+			{% csrf_token %}
+				<input name="user_id" value="{{user_id}}" class="invisible"/>
+				<p>
+					<label for="Title">Title</label>
+					<input name="title" id="Title" value="{{title}}"/>
+				</p>
+				<p>
+					<label for="Text">Text</label>
+					<textarea name="body" id="Text">{{body}}</textarea>
+				</p>
+				<p>
+					<label for="autocomplete_tag">Tags</label>
+					<input id="autocomplete_tag" name="tags_str" type="search" value="{{tags_str}}"/>
+				</p>
+				<script>
+				  $(function() {
+					$("#autocomplete_tag").autocomplete({
+					  source: "{% url 'autocomplete_tag' %}",
+					  minLength: 1,
+					});
+				  });
+				</script>
+				<p>Only first 3 tags will be saved</p>
 
-            <button class="btn btn-success" type="submit">Ask</button>
-        </form>
-    {% else %}
-        <p>You are not authorized</p>
-    {% endif %}
+				<button class="btn btn-success" type="submit">Ask</button>
+			</form>
+		{% else %}
+			<p>You are not authorized</p>
+		{% endif %}
+	</div>
 {% endblock %}

@@ -6,9 +6,17 @@
 {% endblock %}
 
 {% block content %}
-    <form method="POST" class="form-group" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Sign up</button>
-    </form>
+	<style>
+		label {
+			margin-right: 1rem;
+		}
+	</style>
+	<div>
+		<h2>Sign up</h2>
+		<form method="POST" class="form-group" enctype="multipart/form-data">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<button type="submit" class="btn btn-primary">Sign up</button>
+		</form>
+	</div>
 {% endblock %}

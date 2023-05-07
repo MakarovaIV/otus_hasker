@@ -1,38 +1,55 @@
-{% extends 'root.html' %}
+{% extends 'root.html' 0.5rem%}
 
 {% block content %}
-    <h3>Profile</h3>
-    <p>
-        <span>Login</span>
-        <span>{{user.username}}</span>
-    </p>
-    <form action="{% url 'settings' pk=user.id %}" method="post" enctype="multipart/form-data">
+	<style>
+		.invisible {
+			display:none
+		}
 
-    {% csrf_token %}
-        <input name="user_id" value="{{user_id}}" style="display:none"/>
+		span {
+			margin-right: 1rem;
+		}
 
-        <p>
-            <span>Email</span>
-            <input name="email" value="{{user.email}}" required/>
-        </p>
-        <p>
-            <span>Avatar</span>
-            <img id="avatar_preview" class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=user.id %}');"/>
-            <input id="img_input" type="file" name="picture"/>
+		.profile-wrapper {
+			display: flex;
+			flex-direction: column;
+			align-items: start;
+			flex-grow: 1;
+		}
+	</style>
+	<div class="profile-wrapper">
+		<h3>Profile</h3>
+		<p>
+			<span>Login:</span>
+			<span>{{user.username}}</span>
+		</p>
+		<form action="{% url 'settings' pk=user.id %}" method="post" enctype="multipart/form-data">
 
-            <script>
-                const img_input = document.querySelector("#img_input");
-                if (img_input) {
-                    img_input.onchange = evt => {
-                        const [file] = img_input.files
-                        if (file) {
-                             document.querySelector("#avatar_preview").src = URL.createObjectURL(file)
-                        }
-                    }
-                }
-            </script>
-        </p>
+		{% csrf_token %}
+			<input name="user_id" value="{{user_id}}" class="invisible"/>
 
-        <button class="btn btn-success" type="submit">Save</button>
-    </form>
+			<p>
+				<span>Email:</span>
+				<input name="email" value="{{user.email}}" required/>
+			</p>
+			<p>
+				<span>Avatar:</span>
+				<img id="avatar_preview" class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=user.id %}');"/>
+				<input id="img_input" type="file" name="picture"/>
+				<script>
+					const img_input = document.querySelector("#img_input");
+					if (img_input) {
+						img_input.onchange = evt => {
+							const [file] = img_input.files
+							if (file) {
+								 document.querySelector("#avatar_preview").src = URL.createObjectURL(file)
+							}
+						}
+					}
+				</script>
+			</p>
+
+			<button class="btn btn-success" type="submit">Save</button>
+		</form>
+	</div>
 {% endblock %}

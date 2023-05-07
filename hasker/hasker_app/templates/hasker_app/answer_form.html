@@ -6,120 +6,200 @@
 {% endblock %}
 
 {% block content %}
-    <div>
-        <div style="border-bottom: 1px solid grey; display: flex; padding: 1rem 0;">
-            <div style="display: inline-grid; margin: 0 1rem">
-                <form action="{% url 'question_vote' %}" method="post">
-                    {% csrf_token %}
-                    <input name="question_id" value="{{question_id}}" style="display:none"/>
-                    <input name="current_path" value="1" style="display:none"/>
-                    <div style="display: inline-grid; margin: 0 1rem">
-                        {% if user.is_authenticated %}
-                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_increment">˄</button>
-                        {% endif %}
-                        <span style="border:1px solid black; padding:0.6rem; margin: 0.2rem 0">{{ question_votes_count }}</span>
-                        {% if user.is_authenticated %}
-                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_decrement">˅</button>
-                        {% endif %}
-                    </div>
-                </form>
-            </div>
-            <div style="margin: 0 8px">
-                <h3> {{question_title}}</h3>
-                <p>{{question_body}}</p>
-                <p>
-                    {% for tag in question_tags.all %}
-                        <span style="border-radius: 4px; background-color: lightblue; padding: 4px 8px">{{tag.name}}</span> &nbsp
-                    {% endfor %}
-                    <span>{{question_username}}</span>
-                    <img class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=question_user_id %}');"/>
-                </p>
-            </div>
-        </div>
-        {% for answer in answers %}
-            <div style="border-bottom: 1px solid grey; display: flex; padding: 1rem 0;">
-                <form action="{% url 'answer_vote' %}" method="post">
-                    {% csrf_token %}
-                    <input name="answer_id" value="{{ answer.id }}" style="display:none"/>
-                    <input name="question_id" value="{{question_id}}" style="display:none"/>
-                    <input name="current_path" value="1" style="display:none"/>
-                    <div style="display: inline-grid; margin: 0 1rem">
-                        {% if user.is_authenticated %}
-                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_increment">˄</button>
-                        {% endif %}
-                        <span style="border:1px solid black; padding:0.6rem; margin: 0.2rem 0.2rem">{{ answer.votes_count }}</span>
-                        {% if user.is_authenticated %}
-                        <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_decrement">˅</button>
-                        {% endif %}
-                        {% if answer.is_correct == True %}
-                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="unset_correct" {% if user.is_authenticated != True %}disabled{% endif %}>★</button>
-                        {% else %}
+	<style>
+		.q-wrapper,
+		.a-wrapper {
+			border-bottom: 1px solid grey;
+			display: flex;
+			padding: 1rem 0;
+			flex-grow: 1;
+		}
+
+		.vote-btn-div {
+			display: inline-grid;
+			margin: 0 1rem;
+		}
+
+		.invisible {
+			display:none
+		}
+
+		.q-vote-btn {
+			display: inline-grid;
+			margin: 0 1rem;
+		}
+
+		.votes-count {
+			border:1px solid black;
+			padding:0.6rem;
+			margin: 0.2rem 0.2rem;
+		}
+
+		.tag {
+			border-radius: 8px;
+			background-color: lightblue;
+			padding: 0.5rem 1rem;
+			line-height: 1rem;
+			font-size: 1rem;
+			height: 2rem;
+		}
+
+		.q-div {
+			margin: 0 0.2rem;
+			flex-grow: 1;
+		}
+
+		.tag-wrapper {
+			display: flex;
+			padding: 1rem 0;
+			justify-content: space-between;
+		}
+
+		.text {
+			margin: 0.5rem 0;
+			display: grid;
+		}
+
+		.main-wrapper {
+			flex-grow: 1;
+		}
+
+		.a-content {
+			flex-grow: 1;
+		}
+
+		.answer__auther {
+			display: flex;
+			justify-content: end;
+			flex-grow: 1;
+		}
+
+		.username {
+			margin: 0 1rem;
+		}
+	</style>
+    <div class="main-wrapper">
+            <div class="q-wrapper">
+                <div class="vote-btn-div">
+                    <form action="{% url 'question_vote' %}" method="post">
+                        {% csrf_token %}
+                        <input name="question_id" value="{{question.id}}" class="invisible"/>
+                        <input name="current_path" value="1" class="invisible"/>
+                        <div class="q-vote-btn">
                             {% if user.is_authenticated %}
-                                <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="set_correct">☆</button>
+                                <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_increment">˄</button>
                             {% endif %}
-                        {% endif %}
+                            <span class="votes-count">{{ question.votes_count }}</span>
+                            {% if user.is_authenticated %}
+                                <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="q_decrement">˅</button>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                <div class="q-div">
+                    <h3> {{question.title}}</h3>
+                    <p>{{question.body}}</p>
+                    <div class="tag-wrapper">
+                        <div>
+                            {% for tag in question.tags.all %}
+                                <span class="tag">{{tag.name}}</span> &nbsp
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <img class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=question.user.id %}');"/>
+                            <span class="username">{{question.user.username}}</span>
+                        </div>
                     </div>
-                </form>
-                <p>{{answer.body}}</p>
-                <img class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=answer.user.id %}');"/>
-                <p>{{answer.user.username}}</p>
+                </div>
             </div>
-        {% endfor %}
+            {% for answer in answers %}
+                <div class="a-wrapper">
+                    <form action="{% url 'answer_vote' %}" method="post">
+                        {% csrf_token %}
+                        <input name="answer_id" value="{{ answer.id }}" class="invisible"/>
+                        <input name="question_id" value="{{question.id}}" class="invisible"/>
+                        <input name="current_path" value="1" class="invisible"/>
+                        <div class="vote-btn-div">
+                            {% if user.is_authenticated %}
+                                <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_increment">˄</button>
+                            {% endif %}
+                            <span class="votes-count">{{ answer.votes_count }}</span>
+                            {% if user.is_authenticated %}
+                            <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_decrement">˅</button>
+                            {% endif %}
+                            {% if answer.is_correct == True %}
+                                <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="unset_correct" {% if user.is_authenticated != True %}disabled{% endif %}>★</button>
+                            {% else %}
+                                {% if user.is_authenticated %}
+                                    <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="set_correct">☆</button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </form>
+                    <div class="a-content">
+                        <p>{{answer.body}}</p>
+                        <div class="answer__auther">
+                            <img class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=answer.user.id %}');"/>
+                            <p class="username">{{answer.user.username}}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
 
-        <nav aria-label="Page navigation example">
-            <ul class="pagination">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a href="?page={{ page_obj.previous_page_number }}"
-                           class="page-link">&laquo;</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&laquo;</span>
-                    </li>
-                {% endif %}
-
-                {% for page_number in page_obj.paginator.page_range %}
-                    {% if page_obj.number == page_number %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ page_number }}
-                            </span>
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a href="?page={{ page_obj.previous_page_number }}"
+                               class="page-link">&laquo;</a>
                         </li>
                     {% else %}
-                        <li class="page-item">
-                            <a href="?page={{ page_number }}"
-                               class="page-link">
-                                {{ page_number }}
-                            </a>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
                         </li>
                     {% endif %}
-                {% endfor %}
 
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a href="?page={{ page_obj.next_page_number }}"
-                           class="page-link">&raquo;</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&raquo;</span>
-                    </li>
+                    {% for page_number in page_obj.paginator.page_range %}
+                        {% if page_obj.number == page_number %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_number }}
+                                </span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a href="?page={{ page_number }}"
+                                   class="page-link">
+                                    {{ page_number }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a href="?page={{ page_obj.next_page_number }}"
+                               class="page-link">&raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            <form action="{% url 'answer' %}" method="post">
+                {% csrf_token %}
+                {% if user.is_authenticated %}
+                    <p class="text">
+                        <label for="Text">Your answer</label>
+                        <textarea name="body" id="Text"></textarea>
+                    </p>
+                    <input name="user_id" value="{{user_id}}" class="invisible"/>
+                    <input name="question_id" value="{{question.id}}" class="invisible"/>
+                    <button class="btn btn-success" type="submit">Send</button>
                 {% endif %}
-            </ul>
-        </nav>
-        <form action="{% url 'answer_question' %}" method="post">
-            {% csrf_token %}
-            {% if user.is_authenticated %}
-                <p style="margin: 8px 0">
-                    <label for="Text">Your answer</label>
-                    <textarea name="body" id="Text"></textarea>
-                </p>
-                <input name="user_id" value="{{user_id}}" style="display:none"/>
-                <input name="question_id" value="{{question_id}}" style="display:none"/>
-                <button class="btn btn-success" type="submit">Send</button>
-            {% endif %}
-        </form>
-    </div>
+            </form>
+        </div>
     <script>
         setTimeout(function(){
             document.querySelectorAll("input[name=current_path]").forEach(inp => inp.value = window.location.pathname);

@@ -1,17 +1,27 @@
 {% extends 'root.html' %}
 
 {% block content %}
-    <h3>Profile</h3>
-    <p>
-        <span>Login: </span>
-        <span>{{customuser.username}}</span>
-    </p>
-    <p>
-        <span>Email: </span>
-        <span>{{customuser.email}}</span>
-    </p>
-    <p>
-        <span>Avatar</span>
-        <img id="avatar_preview" class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=customuser.id %}');"/>
-    </p>
+	<style>
+		.profile-wrapper {
+			display: flex;
+			flex-direction: column;
+			align-items: start;
+			flex-grow: 1;
+		}
+	</style>
+	<div class="profile-wrapper">
+		<h3>Profile</h3>
+		<p>
+			<span>Login:</span>
+			<span>{{customuser.username}}</span>
+		</p>
+		<p>
+			<span>Email:</span>
+			<span>{{customuser.email}}</span>
+		</p>
+		<p>
+			<span>Avatar</span>
+			<img id="avatar_preview" class="user_avatar" style="background-image: url('{%url 'get_user_image' pk=customuser.id %}');"/>
+		</p>
+	</div>
 {% endblock %}

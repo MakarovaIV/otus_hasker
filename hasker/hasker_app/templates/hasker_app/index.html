@@ -7,85 +7,114 @@
 
 {% block content %}
 
-<style>
-    .sort-btn{
-        font-size: 2rem;
-        color: black;
-        text-decoration: none;
-        border-radius: 0.3rem;
-        background-color: rgba(0, 0, 0, 0.3);
-        padding: 0 1rem;
-    }
+	<style>
+		.sort {
+			display:flex;
+			justify-content: center;
+			gap: 2rem;
+		}
 
-</style>
-    <div style="display:flex; justify-content: center; gap: 2rem;">
-        {% if sort_enabled %}
-            {% if sort == 'hot' %}
-                <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-primary btn-lg active">Sort Hot</a>
-                <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-outline-primary btn-lg">Sort New</a>
-            {% else %}
-                <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-outline-primary btn-lg">Sort Hot</a>
-                <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-primary btn-lg active">Sort New</a>
-            {% endif %}
-        {% endif %}
-    </div>
-    <div style="display: flex;">
-        <div>
+		.sort a {
+			margin: 1rem 0;
+		}
+
+		.main {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			flex-grow: 1;
+		}
+
+		.q {
+			border-bottom: 1px solid grey;
+			width: 100%;
+		}
+
+		.q-div {
+			display: flex;
+			border-top: `px` solid grey;
+			gap: 1rem;
+		}
+
+		.q-body {
+			flex-grow:1;
+		}
+
+		.q-tags-wrapper {
+			margin-top: 0.25rem;
+		}
+
+		.q-tag {
+			border-radius: 4px;
+			background-color: lightblue;
+			padding: 0.25rem 0.5rem;
+			text-decoration: none;
+		}
+
+		.q-counter {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.sort-btn {
+			font-size: 2rem;
+			color: black;
+			text-decoration: none;
+			border-radius: 4px;
+			background-color: rgba(0, 0, 0, 0.3);
+			padding: 0 1rem;
+		}
+
+		.page {
+			margin: 1rem 0;
+		}
+	</style>
+    <div class="main">
+        <div class="q">
+            <div class="sort">
+                {% if sort_enabled %}
+                    {% if sort == 'hot' %}
+                        <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-primary btn-lg active">Sort Hot</a>
+                        <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-outline-primary btn-lg">Sort New</a>
+                    {% else %}
+                        <a href="?page={{ page_obj.number }}&sort=hot" class="btn btn-outline-primary btn-lg">Sort Hot</a>
+                        <a href="?page={{ page_obj.number }}&sort=new" class="btn btn-primary btn-lg active">Sort New</a>
+                    {% endif %}
+                {% endif %}
+            </div>
             {% for question in questions %}
-                <div style="border-bottom: 1px solid grey; display: flex;">
-                    <div style="margin: 0 8px">
-                        <p>{{question.votes_count}}</p>
+                <div class="q-div">
+                    <div class="q-counter">
+                        <span>{{question.votes_count}}</span>
                         <span>Votes</span>
                     </div>
 
-                    <div style="margin: 0 8px">
-                        <p>{{question.answers_count}}</p>
+                    <div class="q-counter">
+                        <span>{{question.answers_count}}</span>
                         <span>Answers</span>
                     </div>
 
-                    <div style="margin: 0 8px">
+                    <div class="q-body">
                         <h3 class="card-title">
                             <a href="{% url 'question_detail' question_id=question.pk %}" class="card-link text-decoration-none link-secondary"> {{question.title}} </a>
                         </h3>
 
-                        <p>
+                        <p class="q-tags-wrapper">
                         {% for tag in question.tags.all %}
-                            <a style="border-radius: 4px; background-color: lightblue; padding: 4px 8px"
-                            href="?search=tag%3A{{ tag.name }}">{{tag.name}}</a> &nbsp
+                            <a class="q-tag" href="?search=tag%3A{{ tag.name }}">{{tag.name}}</a> &nbsp
                         {% endfor %}
                         </p>
                     </div>
-                    <div style="margin: 0 8px">
+                    <div>
                         <a href="{% url 'view_user' pk=question.user.id %}">{{question.user.username}}</a>
                         <p>{{question.date}}</p>
                     </div>
                 </div>
             {% endfor %}
         </div>
-        <div style="margin-left: 10rem;">
-            <h3>Trending</h3>
-
-            {% if user.is_authenticated %}
-                <a href="{% url 'ask' %}" class="btn btn-success">
-                    Ask
-                </a>
-            {% endif %}
-            {% for question in questions|slice:":5" %}
-                <div style="display: flex;">
-                    <div style="border-radius: 4px; background-color: lightblue; padding: 4px 8px; height: 2rem; margin: 0.5rem 0.5rem">
-                        <p>{{question.votes_count}}</p>
-                    </div>
-
-                    <div style="margin: 0.5rem 0.5rem">
-                        <p class="card-title">
-                            <a href="{% url 'question_detail' question_id=question.pk %}" class="card-link text-decoration-none link-secondary"> {{question.title}} </a>
-                        </p>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-    <nav aria-label="Page navigation example">
+        <nav aria-label="Page navigation example" class="page">
         <ul class="pagination">
             {% if page_obj.has_previous %}
                 <li class="page-item">
@@ -126,4 +155,5 @@
             {% endif %}
         </ul>
     </nav>
+    </div>
 {% endblock %}
