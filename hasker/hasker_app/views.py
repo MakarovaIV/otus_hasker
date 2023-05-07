@@ -273,12 +273,16 @@ def answer_votes(request):
                 answer.votes_count = answer_current_count + 1
                 answer.save()
         elif data.get("btn_func") == "set_correct":
-            has_correct_answer = len(Answer.objects.filter(question_id=question_id, is_correct=True)) > 0
-            if has_correct_answer:
-                messages.error(request, "You've already marked")
+            question = get_object_or_404(Question, id=question_id)
+            if request.user.id == question.user.id:
+                has_correct_answer = len(Answer.objects.filter(question_id=question_id, is_correct=True)) > 0
+                if has_correct_answer:
+                    messages.error(request, "You've already marked")
+                else:
+                    answer.is_correct = True
+                    answer.save()
             else:
-                answer.is_correct = True
-                answer.save()
+                messages.error(request, "You cannot mark this answer")
         elif data.get("btn_func") == "unset_correct":
             if answer.is_correct:
                 answer.is_correct = False

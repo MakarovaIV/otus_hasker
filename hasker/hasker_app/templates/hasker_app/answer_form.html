@@ -128,9 +128,9 @@
                             <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="a_decrement">˅</button>
                             {% endif %}
                             {% if answer.is_correct == True %}
-                                <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="unset_correct" {% if user.is_authenticated != True %}disabled{% endif %}>★</button>
+                                <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="unset_correct" {% if user.is_authenticated != True or user.id != question.user.id %}disabled{% endif %}>★</button>
                             {% else %}
-                                {% if user.is_authenticated %}
+                                {% if user.is_authenticated and user.id == question.user.id %}
                                     <button class="btn btn-outline-secondary" type="submit" name="btn_func" value="set_correct">☆</button>
                                 {% endif %}
                             {% endif %}
