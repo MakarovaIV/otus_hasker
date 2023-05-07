@@ -107,8 +107,8 @@
                 {% endif %}
             </ul>
         </nav>
-        <form action="{% url 'question_detail' question_id=question_id %}" method="post">
-        {% csrf_token %}
+        <form action="{% url 'answer_question' %}" method="post">
+            {% csrf_token %}
             {% if user.is_authenticated %}
                 <p style="margin: 8px 0">
                     <label for="Text">Your answer</label>

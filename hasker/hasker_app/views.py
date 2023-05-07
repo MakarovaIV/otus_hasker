@@ -5,8 +5,9 @@ import shutil
 
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.mail import get_connection, EmailMessage
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.urls import reverse_lazy
@@ -15,6 +16,7 @@ from django.views.generic import ListView, CreateView, DetailView, UpdateView
 from .forms import SignUpForm, QuestionCreateForm, AnswerQuestionForm, CustomUserChangeForm
 
 from .models import Question, Tag, Answer, VoteQuestion, VoteAnswer, CustomUser
+from django.conf import settings
 
 
 class IndexView(ListView):
@@ -189,11 +191,40 @@ class AnswerQuestionView(ListView):
         context["vote_for_answer"] = vote_for_answer
         return context
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.question = get_object_or_404(Question, id=self.kwargs['question_id'])
-        form.save()
-        return super(AnswerQuestionView, self).form_valid(form)
+
+def answer_question(request):
+    if request.method == "POST":
+        form = AnswerQuestionForm(request.POST)
+        question_id = form.data['question_id']
+        if form.is_valid():
+            form.instance.user = request.user
+            question = get_object_or_404(Question, id=int(question_id))
+            form.instance.question = question
+            form.save()
+            with get_connection(
+                    host=settings.EMAIL_HOST,
+                    port=settings.EMAIL_PORT,
+                    username=settings.EMAIL_HOST_USER,
+                    password=settings.EMAIL_HOST_PASSWORD,
+                    use_tls=settings.EMAIL_USE_TLS
+            ) as connection:
+                subject = "subject"
+                email_from = settings.EMAIL_HOST_USER
+                recipient_list = [question.user.email]
+                message = format_answer_email(question_id, form.cleaned_data['body'])
+                EmailMessage(subject, message, email_from, recipient_list, connection=connection).send()
+        else:
+            messages.error(request, 'Cannot save your answer')
+    return HttpResponseRedirect('/question/' + question_id + '/')
+
+
+def format_answer_email(question_id, answer):
+    return """You have new answer
+    
+    link to question: {0}
+    
+    answer: {1}
+    """.format('http://127.0.0.1:8000/question/' + question_id + '/', answer)
 
 
 def search_tags(request):
@@ -313,7 +344,7 @@ class UserSettings(UpdateView):
                 messages.info(request, "Changes are saved")
         else:
             messages.error(request, "Incorrect email or avatar")
-        return render(request, "hasker_app/customuser_detail.html")
+        return render(request, "hasker_app/customuser_form.html")
 
     def get(self, request, *args, **kwargs):
         return super().get(self, request, *args, **kwargs)
