@@ -205,7 +205,9 @@ def answer(request):
             form.instance.user = request.user
             question = get_object_or_404(Question, id=int(question_id))
             form.instance.question = question
+            question.answers_count = question.answers_count + 1
             form.save()
+            question.save()
             with get_connection(
                     host=settings.EMAIL_HOST,
                     port=settings.EMAIL_PORT,
