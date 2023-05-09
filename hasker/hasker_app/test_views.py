@@ -1,8 +1,7 @@
 from django.test import TestCase
 from django.test import Client
-from django.contrib.auth import get_user
 
-from .models import CustomUser, Tag, Question, Answer
+from .models import CustomUser, Tag, Question
 
 
 class TestIndexView(TestCase):
@@ -15,7 +14,7 @@ class TestIndexView(TestCase):
 class TestQuestionCreateView(TestCase):
     def setUp(self) -> None:
         self.customuser = CustomUser.objects.create(username='TestUser',
-                                                     email='testuser@mail.ru')
+                                                    email='testuser@mail.ru')
         self.customuser.set_password('test_pass')
         self.customuser.save()
 
@@ -64,7 +63,7 @@ class TestAnswerQuestionView(TestCase):
 class TestUserSettings(TestCase):
     def setUp(self) -> None:
         self.customuser1 = CustomUser.objects.create(username='TestUser',
-                                                    email='testuser@mail.ru')
+                                                     email='testuser@mail.ru')
         self.customuser1.set_password('test_pass')
         self.customuser1.save()
         self.customuser2 = CustomUser.objects.create(username='TestUser2',

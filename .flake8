@@ -8,9 +8,10 @@ exclude =
     venv,
     .env,
     hasker,
-    hasker_app/migrations,
-    hasker_app/templates
+    hasker/hasker_app/migrations,
+    hasker/hasker_app/templates
 
 ignore=
     E722
-max-line-length = 150
+
+max-line-length = 120
