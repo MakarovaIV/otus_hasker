@@ -14,7 +14,10 @@ from django.contrib.auth import login, authenticate, logout
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, DetailView, UpdateView
 
-from .forms import SignUpForm, QuestionCreateForm, AnswerQuestionForm, CustomUserChangeForm
+from .forms import SignUpForm, \
+    QuestionCreateForm, \
+    AnswerQuestionForm, \
+    CustomUserChangeForm
 
 from .models import Question, Tag, Answer, VoteQuestion, VoteAnswer, CustomUser
 from django.conf import settings
@@ -66,7 +69,6 @@ def register(request):
         form = SignUpForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save(commit=False)
-            user.username = user.username.lower()
             picture_data = form.cleaned_data['picture']
             default_pic = 'icons/user-profile-icon.png'
             if picture_data is not None:
@@ -223,9 +225,7 @@ def answer(request):
 
 def format_answer_email(question_id, answer):
     return """You have new answer
-    
     link to question: {0}
-    
     answer: {1}
     """.format('http://127.0.0.1:8000/question/' + question_id + '/', answer)
 
@@ -236,7 +236,7 @@ def autocomplete_tag(request):
     last_input = inputs[-1]
     previous_input = ""
     if len(inputs) > 1:
-        previous_input = ", ".join(inputs[:len(inputs)-1]).strip() + ", "
+        previous_input = ", ".join(inputs[:len(inputs) - 1]).strip() + ", "
     tags = Tag.objects.filter(name__contains=last_input.strip())
     results = []
     for tag in tags:
@@ -267,8 +267,8 @@ def answer_votes(request):
                 messages.error(request, "You've already voted")
             else:
                 vote_answer = VoteAnswer.objects.create(answer_id=answer_id,
-                                                    user_id=request.user.id,
-                                                    question_id=question_id)
+                                                        user_id=request.user.id,
+                                                        question_id=question_id)
                 vote_answer.save()
                 answer.votes_count = answer_current_count + 1
                 answer.save()

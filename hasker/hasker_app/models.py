@@ -10,8 +10,6 @@ class CustomUser(AbstractUser):
     picture = models.FileField(upload_to="tmp_upload")
     picture_data = models.BinaryField(blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
-    password1 = models.CharField(max_length=30)
-    password2 = models.CharField(max_length=30)
 
     USERNAME_FIELD = "username"
 
@@ -20,8 +18,6 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f'{self.username} ' \
                f'{self.email} ' \
-               f'{self.password1} ' \
-               f'{self.password2} ' \
                f'{self.picture} ' \
                f'{self.creation_date}'
 

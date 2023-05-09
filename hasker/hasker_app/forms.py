@@ -9,7 +9,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ["username", "email", "password1", "password2", "picture"]
+        fields = ["username", "email", "picture"]
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -28,7 +28,7 @@ class SignUpForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ["username", "email", "password1", "password2", "picture"]
+        fields = ["username", "email", "picture"]
 
     def clean_email(self):
         '''
@@ -39,17 +39,6 @@ class SignUpForm(UserCreationForm):
         if user_email.exists():
             raise forms.ValidationError("Email is existed")
         return email
-
-    def clean(self):
-        '''
-        Verify both passwords match.
-        '''
-        cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        password2 = cleaned_data.get("password2")
-        if password is not None and password != password2:
-            self.add_error("password2", "Your passwords must match")
-        return cleaned_data
 
 
 class QuestionCreateForm(forms.ModelForm):

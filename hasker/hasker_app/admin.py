@@ -40,14 +40,14 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = ["username", "email", "password1", "password2", "picture"]
+        fields = ["username", "email", "password", "picture"]
 
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = CustomUser
-    list_display = ["username", "email", "password1", "password2", "picture"]
+    list_display = ["username", "email", "password", "picture"]
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
