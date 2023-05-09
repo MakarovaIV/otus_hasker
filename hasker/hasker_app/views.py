@@ -208,18 +208,21 @@ def answer(request):
             question.answers_count = question.answers_count + 1
             form.save()
             question.save()
-            with get_connection(
-                    host=settings.EMAIL_HOST,
-                    port=settings.EMAIL_PORT,
-                    username=settings.EMAIL_HOST_USER,
-                    password=settings.EMAIL_HOST_PASSWORD,
-                    use_tls=settings.EMAIL_USE_TLS
-            ) as connection:
-                subject = "subject"
-                email_from = settings.EMAIL_HOST_USER
-                recipient_list = [question.user.email]
-                message = format_answer_email(question_id, form.cleaned_data['body'])
-                EmailMessage(subject, message, email_from, recipient_list, connection=connection).send()
+            try:
+                with get_connection(
+                        host=settings.EMAIL_HOST,
+                        port=settings.EMAIL_PORT,
+                        username=settings.EMAIL_HOST_USER,
+                        password=settings.EMAIL_HOST_PASSWORD,
+                        use_tls=settings.EMAIL_USE_TLS or False
+                ) as connection:
+                    subject = "subject"
+                    email_from = settings.EMAIL_HOST_USER
+                    recipient_list = [question.user.email]
+                    message = format_answer_email(question_id, form.cleaned_data['body'])
+                    EmailMessage(subject, message, email_from, recipient_list, connection=connection).send()
+            except:
+                pass
         else:
             messages.error(request, 'Cannot save your answer')
     return HttpResponseRedirect('/question/' + question_id + '/')

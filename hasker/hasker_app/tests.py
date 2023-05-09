@@ -1,7 +1,7 @@
 from django.core.files import File
 from django.test import TestCase
 
-import mock
+from unittest import mock
 
 from .models import CustomUser, Tag, Question, Answer
 

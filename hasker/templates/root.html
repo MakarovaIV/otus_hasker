@@ -142,30 +142,31 @@
         {% block content %}
         {% endblock %}
 
-        {% if trending %}
-            <div class="trending__wrapper">
-                <h3>Trending</h3>
+		<div class="trending__wrapper">
+			<h3>Trending</h3>
 
-                {% if user.is_authenticated %}
-                    <a href="{% url 'ask' %}" class="btn btn-success trending__ask-btn">
-                        Ask
-                    </a>
-                {% endif %}
-                {% for question in trending %}
-                    <div class="trending__q-wrapper">
-                        <div class="trending__votes-count">
-                            <p>{{question.votes_count}}</p>
-                        </div>
+			{% if user.is_authenticated %}
+				<a href="{% url 'ask' %}" class="btn btn-success trending__ask-btn">
+					Ask
+				</a>
+			{% endif %}
 
-                        <div class="trending__q-title">
-                            <p class="card-title">
-                                <a href="{% url 'question_detail' question_id=question.pk %}" class="card-link text-decoration-none link-secondary"> {{question.title}} </a>
-                            </p>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        	{% if trending %}
+				{% for question in trending %}
+					<div class="trending__q-wrapper">
+						<div class="trending__votes-count">
+							<p>{{question.votes_count}}</p>
+						</div>
+
+						<div class="trending__q-title">
+							<p class="card-title">
+								<a href="{% url 'question_detail' question_id=question.pk %}" class="card-link text-decoration-none link-secondary"> {{question.title}} </a>
+							</p>
+						</div>
+					</div>
+				{% endfor %}
+        	{% endif %}
+		</div>
     </div>
 
 </body>
