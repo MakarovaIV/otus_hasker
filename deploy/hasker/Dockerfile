@@ -10,13 +10,12 @@ RUN apt-get update
 
 RUN apt-get install -y python3-pip python3-venv python3-dev libpq-dev git
 
-RUN git clone https://github.com/MakarovaIV/otus_hasker.git
+RUN git clone https://github.com/MakarovaIV/otus_hasker.git hasker
 
-WORKDIR /app/otus_hasker
+WORKDIR /app/hasker
 
 RUN pip install -r requirements.txt
 
-RUN make prod
+RUN chmod 777 /app/hasker/deploy/hasker/start.sh
 
-EXPOSE 5432
-EXPOSE 80
+EXPOSE 8000

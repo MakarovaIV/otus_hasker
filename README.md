@@ -5,8 +5,15 @@ Homework 6.0 from OTUS.
 
 **TASK:** Create Q&A website, stackoverflow.com analog.
 
+## Run deploy in Docker
+- Clone repo
+- Execute command
+```commandline
+docker compose up
+```
+- Open in browser http://127.0.0.1:8000/
 
-## Set up
+## Run app for develop
 - Clone repo
 - Install requirements
 ```commandline
@@ -20,15 +27,12 @@ docker run --name pg_db -p 5432:5432 -e POSTGRES_USER={{ user name }} -e POSTGRE
 ```commandline
 python3 manage.py migrate
 ```
-
-## Run
-Run Django server
+- Run Django server
 ```commandline
 python3 manage.py runserver
 ```
 
-## Run tests locally
+## Run tests in develop
 ```commandline
 python3 manage.py test
 ```
-

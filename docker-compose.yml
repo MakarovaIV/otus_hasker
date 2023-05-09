@@ -2,24 +2,44 @@ version: '2.0'
 
 services:
   db:
-    image: postgres
-    restart: always
+    restart: "no"
+    build:
+      context: .
+      dockerfile: ./deploy/db/Dockerfile
     environment:
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: 'pg_password'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_DB: 'postgres'
+      APP_DB_USER: 'hasker'
+      APP_DB_NAME: 'hasker_db'
+      APP_DB_PASSWORD: 'hasker_password'
+    container_name: 'db'
+    volumes:
+      - ./data:/var/lib/postgresql/data:z
     ports:
       - "5432:5432"
+    networks:
+      - djangonetwork
   app:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./deploy/hasker/Dockerfile
     ports:
       - "8000:80"
     environment:
-        - DB_HOST='db'
+      - DB_HOST=db
+    command: bash -c "/app/hasker/deploy/hasker/start.sh"
+    container_name: 'hasker_app'
     depends_on:
       - db
+    links:
+      - db:db
+    networks:
+      - djangonetwork
 
 volumes:
-  postgres_data:
+  db-data:
+
+networks:
+  djangonetwork:
+    driver: bridge
