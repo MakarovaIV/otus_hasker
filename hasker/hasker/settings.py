@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_yasg',
     'hasker_app',
+    'api',
 ]
 
 AUTH_USER_MODEL = "hasker_app.CustomUser"
