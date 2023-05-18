@@ -36,3 +36,8 @@ python3 manage.py runserver
 ```commandline
 python3 manage.py test
 ```
+
+## Swagger
+- Open in browser http://127.0.0.1:8000/api/v1/swagger
+
+Note: Answers list is required authentication.

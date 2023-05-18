@@ -1,17 +1,13 @@
 from rest_framework import generics, filters
-
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 from . import serializers
 import environ
-
 from hasker_app.models import Question, Answer, Tag
 
 
 env = environ.Env()
 environ.Env.read_env()
-
-
-class SignUpView(generics.CreateAPIView):
-    serializer_class = serializers.UserSerializer
 
 
 class QuestionListView(generics.ListAPIView):
@@ -36,6 +32,8 @@ class QuestionDetailView(generics.RetrieveAPIView):
 class AnswerView(generics.ListAPIView):
     serializer_class = serializers.AnswerSerializer
     lookup_field = 'question_id'
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = Answer.objects.filter(question_id=self.kwargs['question_id']).order_by('-votes_count', '-creation_date')
