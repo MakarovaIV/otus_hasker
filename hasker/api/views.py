@@ -13,13 +13,12 @@ environ.Env.read_env()
 class QuestionListView(generics.ListAPIView):
     queryset = Question.objects.all()
     serializer_class = serializers.QuestionSerializer
-    paginate_by = env('INDEX_PAGINATION')
+    page_size = int(env('INDEX_PAGINATION'))
 
 
 class TrendingListView(generics.ListAPIView):
-    queryset = Question.objects.all()
     serializer_class = serializers.QuestionSerializer
-    paginate_by = env('TRENDING_PAGINATION')
+    page_size = int(env('TRENDING_PAGINATION'))
     queryset = Question.objects.all().order_by('-votes_count', '-creation_date')[:int(env('TRENDING_PAGINATION'))]
 
 
